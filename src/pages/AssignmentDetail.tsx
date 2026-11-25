@@ -6,10 +6,10 @@ import { dueLabel, formatBytes, formatDateTime, relativeTime } from "../lib/form
 import { Banner, Empty, PageHeader, Section, StatusBadge } from "../components/ui";
 import SubmitDialog from "../components/SubmitDialog";
 
-const STAGES = ["prepare", "analyze", "generate", "dependencies", "build", "test", "fix", "verify", "done"];
+const STAGES = ["prepare", "analyze", "generate", "dependencies", "build", "test", "fix", "verify", "publish", "done"];
 const STAGE_LABEL: Record<string, string> = {
   prepare: "Reading assignment", analyze: "Analyzing", generate: "Writing files", dependencies: "Dependencies",
-  build: "Building", test: "Testing", fix: "Fixing", verify: "Verifying", done: "Done",
+  build: "Building", test: "Testing", fix: "Fixing", verify: "Verifying", publish: "GitHub", done: "Done",
 };
 type Tab = "overview" | "materials" | "files" | "log" | "submission";
 

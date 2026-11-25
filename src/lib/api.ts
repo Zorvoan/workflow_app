@@ -173,7 +173,7 @@ export interface Dashboard {
 
 export interface Settings {
   edupage: { subdomain: string; username: string; remember_password: boolean; sync_interval_minutes: number; history_days: number };
-  github: { default_private: boolean; repo_name_template: string; oauth_client_id: string; login: string | null };
+  github: { default_private: boolean; repo_name_template: string; auto_publish: boolean; oauth_client_id: string; login: string | null };
   ai: { provider: string; model: string; base_url: string; effort: string; max_fix_iterations: number; max_agent_turns: number };
   build: { projects_dir: string; command_timeout_secs: number; allow_dependency_install: boolean; enabled_languages: string[]; extra_gitignore: string };
   ui: { theme: "system" | "light" | "dark" };

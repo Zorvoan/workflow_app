@@ -244,10 +244,30 @@ pub fn start_build(app: AppHandle, state: Arc<AppState>, id: String) -> AppResul
             }
         };
         let _ = state.db.set_status(&id, if succeeded { Status::ReadyToSubmit } else { Status::BuildFailed });
+        if succeeded && s.github.auto_publish {
+            auto_publish(&state, &reporter, &id).await;
+        }
         state.builds.lock().unwrap_or_else(|p| p.into_inner()).remove(&id);
         let _ = app.emit("build-finished", BuildFinished { assignment_id: id, build_id, succeeded, error });
     });
     Ok(build_id)
+}
+
+/// After a successful build: push to GitHub if connected. Failures are logged, never fatal.
+async fn auto_publish(state: &AppState, reporter: &DbReporter, id: &str) {
+    if !matches!(state.secrets.get(&SecretKey::GithubToken), Ok(Some(_))) {
+        reporter.report(Stage::Publish, Level::Warn, "GitHub is not connected; skipped automatic publishing. Connect it in Settings → GitHub.");
+        return;
+    }
+    reporter.report(Stage::Publish, Level::Info, "Publishing to GitHub…");
+    match publish(state, id, None).await {
+        Ok(r) => reporter.report(
+            Stage::Publish,
+            Level::Success,
+            &format!("{} {} ({} files, commit {})", if r.created { "Created" } else { "Updated" }, r.url, r.files, &r.commit[..r.commit.len().min(7)]),
+        ),
+        Err(e) => reporter.report(Stage::Publish, Level::Error, &format!("GitHub publishing failed: {e}")),
+    }
 }
 
 pub fn cancel_build(state: &AppState, id: &str) -> AppResult<()> {

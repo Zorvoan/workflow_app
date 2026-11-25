@@ -126,6 +126,10 @@ function GithubSection({ s, set }: { s: Settings; set: (f: (s: Settings) => Sett
         <Field label="OAuth App client id (optional)" hint="Enables “Sign in with GitHub” via the device flow. Create an OAuth App with device flow enabled.">
           <input type="text" value={s.github.oauth_client_id} onChange={(e) => set((x) => ({ ...x, github: { ...x.github, oauth_client_id: e.target.value } }))} />
         </Field>
+        <label className="check">
+          <input type="checkbox" checked={s.github.auto_publish} onChange={(e) => set((x) => ({ ...x, github: { ...x.github, auto_publish: e.target.checked } }))} />
+          Push to GitHub automatically after every successful build
+        </label>
         <Field label="Default visibility">
           <select value={s.github.default_private ? "private" : "public"} onChange={(e) => set((x) => ({ ...x, github: { ...x.github, default_private: e.target.value === "private" } }))}>
             <option value="private">Private</option>

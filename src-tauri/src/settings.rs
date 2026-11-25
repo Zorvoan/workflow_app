@@ -36,6 +36,8 @@ pub struct GithubSettings {
     pub default_private: bool,
     /// Tokens: {subject} {title} {year} {date} {id}
     pub repo_name_template: String,
+    /// Push to GitHub automatically after every successful build.
+    pub auto_publish: bool,
     /// OAuth App client id for the device flow. Empty = only personal access tokens.
     pub oauth_client_id: String,
     pub login: Option<String>,
@@ -85,7 +87,7 @@ impl Default for EdupageSettings {
 
 impl Default for GithubSettings {
     fn default() -> Self {
-        Self { default_private: true, repo_name_template: "{subject}-{title}".into(), oauth_client_id: String::new(), login: None }
+        Self { default_private: true, repo_name_template: "{subject}-{title}".into(), auto_publish: true, oauth_client_id: String::new(), login: None }
     }
 }
 

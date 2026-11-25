@@ -34,6 +34,7 @@ pub enum Stage {
     Test,
     Fix,
     Verify,
+    Publish,
     Done,
 }
 
@@ -48,6 +49,7 @@ impl Stage {
             Stage::Test => "test",
             Stage::Fix => "fix",
             Stage::Verify => "verify",
+            Stage::Publish => "publish",
             Stage::Done => "done",
         }
     }
