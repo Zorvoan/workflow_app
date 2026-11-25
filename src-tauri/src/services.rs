@@ -244,8 +244,11 @@ pub fn start_build(app: AppHandle, state: Arc<AppState>, id: String) -> AppResul
             }
         };
         let _ = state.db.set_status(&id, if succeeded { Status::ReadyToSubmit } else { Status::BuildFailed });
-        if succeeded && s.github.auto_publish {
-            auto_publish(&state, &reporter, &id).await;
+        if succeeded {
+            if s.github.auto_publish {
+                auto_publish(&state, &reporter, &id).await;
+            }
+            open_hand_in(&app, &state, &reporter, &id).await;
         }
         state.builds.lock().unwrap_or_else(|p| p.into_inner()).remove(&id);
         let _ = app.emit("build-finished", BuildFinished { assignment_id: id, build_id, succeeded, error });
@@ -268,6 +271,35 @@ async fn auto_publish(state: &AppState, reporter: &DbReporter, id: &str) {
         ),
         Err(e) => reporter.report(Stage::Publish, Level::Error, &format!("GitHub publishing failed: {e}")),
     }
+}
+
+/// After a successful build: prepare the ZIP, copy the repository link to the
+/// clipboard, and open GitHub plus EduPage so the student can hand it in.
+async fn open_hand_in(app: &AppHandle, state: &AppState, reporter: &DbReporter, id: &str) {
+    use tauri_plugin_clipboard_manager::ClipboardExt;
+    use tauri_plugin_opener::OpenerExt;
+
+    let Ok(a) = state.db.get_assignment(id) else { return };
+    if let Err(e) = prepare_submission(state, id).await {
+        reporter.report(Stage::Done, Level::Warn, &format!("Could not prepare the submission ZIP: {e}"));
+    }
+    if let Some(url) = &a.repo_url {
+        match app.clipboard().write_text(url.clone()) {
+            Ok(()) => reporter.report(Stage::Done, Level::Info, &format!("Repository link copied to clipboard: {url}")),
+            Err(e) => reporter.report(Stage::Done, Level::Warn, &format!("Could not copy the link: {e}")),
+        }
+        if let Err(e) = app.opener().open_url(url, None::<&str>) {
+            reporter.report(Stage::Done, Level::Warn, &format!("Could not open GitHub: {e}"));
+        }
+    }
+    let sub = state.settings().map(|s| s.edupage.subdomain).unwrap_or_default();
+    if !sub.is_empty() {
+        let edupage_url = format!("https://{sub}.edupage.org/user/");
+        if let Err(e) = app.opener().open_url(&edupage_url, None::<&str>) {
+            reporter.report(Stage::Done, Level::Warn, &format!("Could not open EduPage: {e}"));
+        }
+    }
+    reporter.report(Stage::Done, Level::Info, "Opened GitHub and EduPage. Hand the assignment in on EduPage, then click “I handed it in” in EduTask.");
 }
 
 pub fn cancel_build(state: &AppState, id: &str) -> AppResult<()> {

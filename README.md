@@ -59,7 +59,13 @@ The installers are written to `src-tauri/target/release/bundle/`. For developmen
 2. **Settings → AI**: choose the provider and paste an API key (Anthropic is the default, using `claude-opus-5-5`). Any OpenAI-compatible endpoint, including a local model server, also works.
 3. **Settings → GitHub**: paste a personal access token. Fine-grained tokens need *Administration* and *Contents* read/write; classic tokens need `repo`. Or set an OAuth App client id and use **Sign in with GitHub**.
 4. **Settings → Build**: choose the project directory (default `Documents\EduTask`), the timeout, whether dependency installs are allowed, and which languages are allowed.
-5. Open an assignment and press **BUILD ASSIGNMENT**. When it succeeds, use **GitHub & submission → Publish**, then **Review & submit…**.
+5. Open an assignment and press **BUILD ASSIGNMENT**. When the build succeeds, EduTask automatically:
+   * pushes the project to GitHub (Settings → GitHub → "Push to GitHub automatically"),
+   * prepares `submission\<name>.zip`,
+   * copies the repository link to the clipboard and opens the GitHub repo and your EduPage in the browser,
+   * shows a **Ready to hand in** panel with the link, the ZIP folder and an **I handed it in** button.
+
+   Hand the assignment in on EduPage yourself, then click **I handed it in**. It is recorded as self-reported.
 
 Each assignment gets a workspace:
 

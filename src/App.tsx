@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import { listen } from "@tauri-apps/api/event";
 import { api, errorMessage, type Dashboard as DashboardData, type Settings } from "./lib/api";
 import { relativeTime } from "./lib/format";
@@ -20,6 +20,7 @@ export default function App() {
   const [lastSync, setLastSync] = useState<DashboardData["last_sync"]>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const refresh = useCallback(() => {
     api.dashboard().then((d) => {
@@ -34,11 +35,15 @@ export default function App() {
     const un = [
       listen("sync-finished", () => { setSyncing(false); setSyncError(null); refresh(); }),
       listen("sync-failed", (e) => { setSyncing(false); setSyncError(errorMessage(e.payload)); refresh(); }),
-      listen("build-finished", refresh),
+      listen<{ assignment_id: string; succeeded: boolean }>("build-finished", (e) => {
+        refresh();
+        // Bring the student to the hand-in panel of the finished assignment.
+        if (e.payload.succeeded) navigate(`/assignment/${encodeURIComponent(e.payload.assignment_id)}`);
+      }),
       listen<string>("theme-changed", (e) => applyTheme(e.payload as Settings["ui"]["theme"])),
     ];
     return () => { un.forEach((p) => p.then((f) => f())); };
-  }, [refresh]);
+  }, [refresh, navigate]);
 
   const syncNow = async () => {
     setSyncing(true);

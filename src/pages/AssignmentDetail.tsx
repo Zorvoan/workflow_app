@@ -142,6 +142,32 @@ export default function AssignmentDetail() {
       {notice && <Banner tone="ok">{notice}</Banner>}
       {!running && lastBuild?.outcome === "failed" && lastBuild.error && <Banner tone="error">Last build failed: {lastBuild.error}</Banner>}
 
+      {a.status === "ready_to_submit" && !running && (
+        <div className="panel panel-pad" style={{ marginBottom: 16, borderColor: "var(--ok)" }}>
+          <h2 style={{ marginBottom: 6 }}>Ready to hand in</h2>
+          <p style={{ margin: "0 0 10px" }} className="muted">
+            Hand the assignment in on EduPage yourself, then confirm here. EduTask will record it as handed in by you (self-reported).
+          </p>
+          {a.repo_url ? (
+            <div className="btn-row" style={{ marginBottom: 10 }}>
+              <code style={{ padding: "4px 8px", background: "var(--bg-sub)", borderRadius: 4 }}>{a.repo_url}</code>
+              <button className="btn" onClick={() => navigator.clipboard.writeText(a.repo_url!).then(() => setNotice("Link copied")).catch(() => setError("Could not copy the link"))}>Copy link</button>
+              <button className="btn" onClick={() => api.openExternal(a.repo_url!)}>Open GitHub</button>
+            </div>
+          ) : (
+            <p className="tone-warn" style={{ margin: "0 0 10px" }}>Not on GitHub yet. Connect GitHub in Settings or publish from the “GitHub & submission” tab.</p>
+          )}
+          <div className="btn-row">
+            <button className="btn" onClick={() => api.openEdupage().catch((e) => setError(errorMessage(e)))}>Open EduPage</button>
+            <button className="btn" onClick={() => api.openWorkspace(id, "submission").catch((e) => setError(errorMessage(e)))}>Open ZIP folder</button>
+            <button className="btn primary" disabled={!!busy} onClick={() => run("handin", async () => {
+              const p = await api.prepareSubmission(id);
+              await api.recordManualSubmission(id, p.confirm_token, "Handed in on EduPage by the student");
+            }, () => "Marked as handed in.")}>{busy === "handin" ? "Saving…" : "I handed it in"}</button>
+          </div>
+        </div>
+      )}
+
       {(running || events.length > 0) && <Progress events={events} running={running} />}
 
       <div className="tabs">
