@@ -1,0 +1,50 @@
+[package]
+name = "edutask"
+version = "0.1.0"
+description = "EduTask – automated school assignment manager"
+edition = "2021"
+rust-version = "1.91"
+
+[lib]
+name = "edutask_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "time", "fs", "io-util", "sync"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "cookies", "json", "multipart", "gzip"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+keyring = { version = "3", features = ["windows-native", "apple-native", "sync-secret-service", "crypto-rust"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+flate2 = "1"
+sha1 = "0.10"
+base64 = "0.22"
+regex = "1"
+ignore = "0.4"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+html2text = "0.12"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+tracing-appender = "0.2"
+url = "2"
+async-trait = "0.1"
+mime_guess = "2"
+dirs = "5"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
